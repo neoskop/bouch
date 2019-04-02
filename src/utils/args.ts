@@ -67,12 +67,12 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs | IMigr
         })
         .option('format', {
             alias: 'F',
-            describe: 'File format',
+            describe: 'File format (ignored in migrate)',
             choices: [ 'bson', 'json' ]
         })
         .option('compress', {
             alias: 'C',
-            describe: 'File compression',
+            describe: 'File compression (ignored in migrate)',
             choices: [ 'none', 'gz', 'br' ]
         })
         .option('quiet', {
