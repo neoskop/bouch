@@ -61,6 +61,7 @@
   },
   "include": [
     "src/index.ts",
-    "src/cli.ts"
+    "src/cli.ts",
+    "src/**.ts"
   ]
 }
