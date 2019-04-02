@@ -24,8 +24,14 @@ export interface IRestoreArgs extends IBaseArgs {
     file: string;
 }
 
+export interface IMigrateArgs extends IBaseArgs {
+    cmd: 'migrate';
+    from: string;
+    to: string;
+}
 
-export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs {
+
+export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs | IMigrateArgs {
     const args = yargs
         .command('backup <url>', 'Backup a couchdb database', yargs => {
             return yargs.positional('url', {
@@ -44,6 +50,13 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs {
                 describe: 'Backup file'
             }).positional('url', {
                 describe: 'Database URL'
+            })
+        })
+        .command('migrate <from> <to>', 'Copy from one database to another', yargs => {
+            return yargs.positional('from', {
+                describe: 'From Database'
+            }).positional('to', {
+                describe: 'To Database'
             })
         })
         .option('chunk-size', {
@@ -99,6 +112,16 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs {
                 chunkSize: args.chunkSize,
                 format: format,
                 compress: compress,
+                quiet: args.quiet
+            }
+        case 'migrate':
+            return {
+                cmd: 'migrate',
+                from: args.from,
+                to: args.to,
+                chunkSize: args.chunkSize,
+                format: 'bson',
+                compress: 'none',
                 quiet: args.quiet
             }
     }

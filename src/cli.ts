@@ -74,9 +74,43 @@ export async function cli() {
                 bar && bar.terminate();
                 break;
             }
+            case 'migrate': {
+                let bar: ProgressBar|undefined;
+
+                const backup = new Backup(args.from, args);
+                backup.registerSerializer(BsonSerializer.serialize());
+
+                if(!args.quiet) {
+                    backup.events.subscribe(event => {
+                        if (!bar) {
+                            bar = new ProgressBar('RETRIVE [:bar] :current/:total :percent :etas remaining', { width: 40, total: event.total });
+                        }
+                        bar.tick();
+                    });
+                }
+
+                const content = await backup.backup();
+
+                bar = undefined;
+
+                const restore = new Restore(args.to, args);
+                restore.registerDeserializer(BsonSerializer.deserialize());
+
+                if(!args.quiet) {
+                    restore.events.subscribe(event => {
+                        if (!bar) {
+                            bar = new ProgressBar('RESTORE [:bar] :current/:total :percent :etas remaining', { width: 40, total: event.total });
+                        }
+                        bar.tick();
+                    });
+                }
+                await restore.restore(content);
+
+                bar && bar!.terminate();
+            }
         }
     } catch(e) {
-        console.error(e.message);
+        console.error(e.stack);
         process.exit(1);
     }
 }
