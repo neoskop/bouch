@@ -18,7 +18,7 @@
   "license": "MIT",
   "private": false,
   "bin": {
-    "bouch": "./bin/pouch.js"
+    "bouch": "./bin/bouch.js"
   },
   "scripts": {
     "build": "tsc",
