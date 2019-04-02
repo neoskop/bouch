@@ -19,7 +19,7 @@ $ bouch backup http://localhost:5984/dbname
 ```
 
 ```sh
-$ bouch backup --help                                                                                                                                                                       ‹ruby-2.1.10›
+$ bouch backup --help
 bouch backup <url>
 
 Backup a couchdb database
@@ -47,7 +47,7 @@ $ bouch restore backup-file.bson http://localhost:5984/dbname
 ```
 
 ```sh
-$ bouch restore --help                                                                                                                                                                      ‹ruby-2.1.10›
+$ bouch restore --help
 bouch restore <file> <url>
 
 Restore a backup
@@ -74,7 +74,7 @@ $ bouch migrate http://localhost:5984/dbname http://localhost:5984/dbname-new
 ```
 
 ```sh
-$ bouch migrate --help                                                                                                                                                                      ‹ruby-2.1.10›
+$ bouch migrate --help
 bouch migrate <from> <to>
 
 Copy from one database to another
