@@ -25,7 +25,7 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs {
             }).option('file', {
                 alias: 'f',
                 describe: 'File to create',
-                default: `backup_${dateFormat(new Date(), 'yyyy-mm-dd_HH:MM')}.bson`
+                default: `backup_${dateFormat(new Date(), 'yyyy-mm-dd_HH:MM')}.json`
             });
         })
         .command('restore <file> <url>', 'Restore a backup', yargs => {
