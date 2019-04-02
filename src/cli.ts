@@ -10,8 +10,9 @@ import { BrotliCompressor} from './compressors/brotli-compressor';
 import { getArgs } from './utils/args';
 
 export async function cli() {
-    const args = getArgs();
     try {
+        const args = getArgs();
+        
         switch (args.cmd) {
             case 'backup': {
                 let bar: ProgressBar|undefined;
