@@ -1,6 +1,6 @@
 {
   "name": "@neoskop/bouch",
-  "version": "0.1.0-rc.0",
+  "version": "0.1.0-rc.1",
   "description": "CouchDB/PouchDB Backup/Restore Tool with Attachments Support",
   "main": "index.js",
   "author": "Mark Wecke <wecke@neoskop.de>",
