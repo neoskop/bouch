@@ -38,7 +38,11 @@ export async function cli() {
 
                 bar && bar.terminate();
 
-                await fs.writeFile(args.file, content);
+                if(args.stdout) {
+                    process.stdout.write(content);
+                } else {
+                    await fs.writeFile(args.file, content);
+                }
 
                 break;
             }

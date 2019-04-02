@@ -15,6 +15,7 @@ export interface IBackupArgs extends IBaseArgs {
     cmd: 'backup';
     file: string;
     url: string;
+    stdout: boolean;
 }
 
 export interface IRestoreArgs extends IBaseArgs {
@@ -32,6 +33,10 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs {
             }).option('file', {
                 alias: 'f',
                 describe: 'File to create',
+            }).option('stdout', {
+                describe: 'Output to stdout instead of file',
+                type: 'boolean',
+                default: false
             });
         })
         .command('restore <file> <url>', 'Restore a backup', yargs => {
@@ -75,7 +80,8 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs {
                 chunkSize: args.chunkSize,
                 format: args.format || 'bson',
                 compress: args.compress || 'none',
-                quiet: args.quiet
+                quiet: args.quiet || args.stdout,
+                stdout: args.stdout
             }
         case 'restore':
             const defaults = parseFileName(args.file);
