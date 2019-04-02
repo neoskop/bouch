@@ -1,7 +1,9 @@
 import { Observable } from 'rxjs';
-import sortObject from 'sort-object-keys';
+
 
 import { CouchDbApi, Doc } from './utils/couchdb-api';
+
+import { ProgressEvent } from './utils/progress-event';
 
 
 // import BSON from 'bson';
@@ -11,84 +13,71 @@ import { CouchDbApi, Doc } from './utils/couchdb-api';
 
 
 
-export class ProgressEvent {
-    constructor(public readonly loaded: number,
-        public readonly total: number) { }
-}
 
 export class BackupResult {
     constructor(public readonly bson: Buffer) { }
 }
 
-function sortObjectRecursive<T>(obj: T): T {
-    if (obj && typeof obj === 'object' && obj.constructor === Object) {
-        obj = sortObject(obj);
-        for (const key in obj) {
-            obj[key] = sortObjectRecursive(obj[key]);
-        }
-    }
-    return obj;
-}
 
-export function backup(url: string, options: { chunkSize: number }): Observable<ProgressEvent | BackupResult> {
-    return new Observable(sub => {
-        let canceled = false;
+// export function backup(url: string, options: { chunkSize: number }): Observable<ProgressEvent | BackupResult> {
+//     return new Observable(sub => {
+//         let canceled = false;
 
-        const api = new CouchDbApi(url);
+//         const api = new CouchDbApi(url);
 
-        let skip = 0;
-        let total_rows = Infinity;
-        let i = 0;
-        const obj: {
-            [id: string]: {
-                doc: Doc<{}>;
-                attachments: {
-                    [name: string]: {
-                        content_type: string;
-                        content: Buffer
-                    }
-                }
-            }
-        } = {};
+//         let skip = 0;
+//         let total_rows = Infinity;
+//         let i = 0;
+//         const obj: {
+//             [id: string]: {
+//                 doc: Doc<{}>;
+//                 attachments: {
+//                     [name: string]: {
+//                         content_type: string;
+//                         content: Buffer
+//                     }
+//                 }
+//             }
+//         } = {};
 
-        (async () => {
-            while (skip <= total_rows && !canceled) {
-                const res = await api.allDocs({ limit: options.chunkSize, skip });
-                skip += options.chunkSize;
-                total_rows = res.total_rows;
+//         (async () => {
+//             while (skip <= total_rows && !canceled) {
+//                 const res = await api.allDocs({ limit: options.chunkSize, skip });
+//                 skip += options.chunkSize;
+//                 total_rows = res.total_rows;
 
-                for (const row of res.rows) {
-                    obj[row.id] = {
-                        doc: { ...row.doc },
-                        attachments: {}
-                    }
-                    if (row.doc._attachments) {
-                        for (const attachment in row.doc._attachments) {
-                            obj[row.id].attachments[attachment] = {
-                                content_type: row.doc._attachments[attachment].content_type,
-                                content: await api.getAttachment(row.id, attachment)
-                            }
-                        }
-                    }
-                    delete obj[row.id].doc._rev;
-                    delete obj[row.id].doc._attachments;
-                    sub.next(new ProgressEvent(++i, total_rows));
-                }
-            }
-            // sub.next(new BackupResult(BSON.serialize(obj)));
-            sub.next(new BackupResult(JSON.stringify(sortObjectRecursive(obj), (_key: string, value: any) => {
-                if (value && typeof value === 'object' && value.type === 'Buffer') {
-                    const buf = new Buffer(value.data);
-                    return 'base64,' + buf.toString('base64');
-                }
-                return value;
-            }, 2) as any))
-            sub.complete();
-        })().catch(err => sub.error(err));
+//                 for (const row of res.rows) {
+//                     obj[row.id] = {
+//                         doc: { ...row.doc },
+//                         attachments: {}
+//                     }
+//                     if (row.doc._attachments) {
+//                         for (const attachment in row.doc._attachments) {
+//                             obj[row.id].attachments[attachment] = {
+//                                 content_type: row.doc._attachments[attachment].content_type,
+//                                 content: await api.getAttachment(row.id, attachment)
+//                             }
+//                         }
+//                     }
+//                     delete obj[row.id].doc._rev;
+//                     delete obj[row.id].doc._attachments;
+//                     sub.next(new ProgressEvent(++i, total_rows));
+//                 }
+//             }
+//             // sub.next(new BackupResult(BSON.serialize(obj)));
+//             sub.next(new BackupResult(JSON.stringify(sortObjectRecursive(obj), (_key: string, value: any) => {
+//                 if (value && typeof value === 'object' && value.type === 'Buffer') {
+//                     const buf = new Buffer(value.data);
+//                     return 'base64,' + buf.toString('base64');
+//                 }
+//                 return value;
+//             }, 2) as any))
+//             sub.complete();
+//         })().catch(err => sub.error(err));
 
-        return () => canceled = true;
-    })
-}
+//         return () => canceled = true;
+//     })
+// }
 
 export function restore(url: string, bson: Buffer, options: { chunkSize: number, force?: boolean }) {
     return new Observable(sub => {

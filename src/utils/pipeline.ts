@@ -17,7 +17,7 @@ export class Pipeline<INPUT, STEPINPUT = INPUT, STEPOUTPUT = INPUT> {
         return input as unknown as STEPOUTPUT;
     }
 
-    use<N>(middleware : Middleware<STEPOUTPUT, N>) {
+    use<N>(middleware : Middleware<STEPOUTPUT, N>) : Pipeline<INPUT, STEPOUTPUT, N> {
         return new Pipeline<INPUT, STEPOUTPUT, N>(this, middleware);
     }
 }
