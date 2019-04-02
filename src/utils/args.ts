@@ -32,7 +32,7 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs {
                 describe: 'Database URL'
             }).option('file', {
                 alias: 'f',
-                describe: 'File to create',
+                describe: 'File to create'
             }).option('stdout', {
                 describe: 'Output to stdout instead of file',
                 type: 'boolean',
@@ -70,7 +70,6 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs {
         })
         .parse(argv.slice(2)) as any;
 
-
     switch (args._[0]) {
         case 'backup':
             return {
@@ -86,7 +85,7 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs {
         case 'restore':
             const defaults = parseFileName(args.file);
 
-            const format = args.format || defaults && defaults.format;
+            const format = args.format || defaults && defaults.format || 'bson';
             const compress = args.compress || defaults && defaults.compress || 'none';
 
             if(!format) {
@@ -96,7 +95,7 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs {
             return {
                 cmd: 'restore',
                 url: args.url,
-                file: args.file,
+                file: args.file === true ? '-' : args.file,
                 chunkSize: args.chunkSize,
                 format: format,
                 compress: compress,

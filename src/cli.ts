@@ -8,6 +8,7 @@ import { BsonSerializer } from './serializers/bson-serializer';
 import { GzipCompressor } from './compressors/gzip-compressor';
 import { BrotliCompressor} from './compressors/brotli-compressor';
 import { getArgs } from './utils/args';
+import { streamToBuffer } from './utils/stream-to-buffer';
 
 export async function cli() {
     try {
@@ -49,7 +50,7 @@ export async function cli() {
             case 'restore': {
                 let bar: ProgressBar|undefined;
 
-                const file = await fs.readFile(args.file);
+                const file = await (args.file === '-' ? streamToBuffer(process.stdin) : fs.readFile(args.file));
 
                 const restore = new Restore(args.url, args);
                 restore.registerDeserializer(args.format === 'json' ? JsonSerializer.deserialize() : BsonSerializer.deserialize());
