@@ -4,6 +4,7 @@ import dateFormat from 'dateformat';
 export interface IBaseArgs {
     chunkSize: number;
     format: 'bson' | 'json';
+    compress: 'none' | 'gz' | 'br';
 }
 
 export interface IBackupArgs extends IBaseArgs {
@@ -44,9 +45,15 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs {
         })
         .option('format', {
             alias: 'F',
-            describe: 'File Format',
+            describe: 'File format',
             choices: [ 'bson', 'json' ],
             default: 'bson'
+        })
+        .option('compress', {
+            alias: 'C',
+            describe: 'File compression',
+            choices: [ 'none', 'gz', 'br' ],
+            default: 'none'
         })
         .parse(argv.slice(2)) as any;
 
@@ -56,9 +63,10 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs {
             return {
                 cmd: 'backup',
                 url: args.url,
-                file: `${args.file}.${args.format}`,
+                file: `${args.file}.${args.format}${args.compress !== 'none' ? `.${args.compress}` : ''}`,
                 chunkSize: args.chunkSize,
-                format: args.format
+                format: args.format,
+                compress: args.compress
             }
         case 'restore':
             return {
@@ -66,7 +74,8 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs {
                 url: args.url,
                 file: args.file,
                 chunkSize: args.chunkSize,
-                format: args.format
+                format: args.format,
+                compress: args.compress
             }
     }
 
