@@ -69,7 +69,7 @@ export class CouchDbApi {
             responseType: 'arraybuffer'
         });
 
-        return new Buffer(res.data, 'binary');
+        return Buffer.from(res.data, 'binary');
     }
 
     async putAttachment(id: string, name: string, rev: string, content: Buffer, content_type: string) : Promise<CreateResponse> {

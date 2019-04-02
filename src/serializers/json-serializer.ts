@@ -2,7 +2,7 @@ import { Middleware } from '../utils/pipeline';
 
 function bufferReplacer(_key: string, value : any) {
     if (value && typeof value === 'object' && value.type === 'Buffer') {
-        const buf = new Buffer(value.data);
+        const buf = Buffer.from(value.data);
         return 'base64,' + buf.toString('base64');
     }
     return value;
@@ -10,7 +10,7 @@ function bufferReplacer(_key: string, value : any) {
 
 function bufferReviver(_key: any, value: any) {
     if (typeof value === 'string' && value.startsWith('base64,')) {
-        return new Buffer(value.slice(7), 'base64');
+        return Buffer.from(value.slice(7), 'base64');
     }
     return value;
 }
@@ -19,7 +19,7 @@ export class JsonSerializer {
     static serialize({ space } : { space?: number|string } = {}) : Middleware<object, Buffer> {
         return (input : object) => {
             const json = JSON.stringify(input, bufferReplacer, space);
-            return new Buffer(json);
+            return Buffer.from(json);
         }
     }
 
