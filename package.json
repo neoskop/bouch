@@ -1,7 +1,7 @@
 {
   "name": "@neoskop/bouch",
   "version": "0.0.0",
-  "description": "CouchDB/PouchDB Backup/Restore Tool with Attachments Support\"",
+  "description": "CouchDB/PouchDB Backup/Restore Tool with Attachments Support",
   "main": "index.js",
   "author": "Mark Wecke <wecke@neoskop.de>",
   "license": "MIT",
@@ -10,7 +10,9 @@
     "bouch": "./bin/pouch.js"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "publish-next": "npm run build && npm publish --tag next",
+    "publish-latest": "npm run build && npm publish"
   },
   "devDependencies": {
     "@types/axios": "0.14.0",
