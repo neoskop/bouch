@@ -12,7 +12,7 @@ import { getArgs } from './utils/args';
 export async function cli() {
     try {
         const args = getArgs();
-        
+
         switch (args.cmd) {
             case 'backup': {
                 let bar: ProgressBar|undefined;
@@ -25,12 +25,14 @@ export async function cli() {
                     backup.registerCompressor(BrotliCompressor.compress())
                 }
 
-                backup.events.subscribe(event => {
-                    if (!bar) {
-                        bar = new ProgressBar('BACKUP [:bar] :current/:total :percent :etas remaining', { width: 40, total: event.total });
-                    }
-                    bar.tick();
-                });
+                if(!args.quiet) {
+                    backup.events.subscribe(event => {
+                        if (!bar) {
+                            bar = new ProgressBar('BACKUP [:bar] :current/:total :percent :etas remaining', { width: 40, total: event.total });
+                        }
+                        bar.tick();
+                    });
+                }
 
                 const content = await backup.backup();
 
@@ -54,12 +56,14 @@ export async function cli() {
                     restore.registerDecompressor(BrotliCompressor.decompress())
                 }
 
-                restore.events.subscribe(event => {
-                    if (!bar) {
-                        bar = new ProgressBar('RESTORE [:bar] :current/:total :percent :etas remaining', { width: 40, total: event.total });
-                    }
-                    bar.tick();
-                });
+                if(!args.quiet) {
+                    restore.events.subscribe(event => {
+                        if (!bar) {
+                            bar = new ProgressBar('RESTORE [:bar] :current/:total :percent :etas remaining', { width: 40, total: event.total });
+                        }
+                        bar.tick();
+                    });
+                }
                 await restore.restore(file);
 
                 bar && bar.terminate();

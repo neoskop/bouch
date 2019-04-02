@@ -8,6 +8,7 @@ export interface IBaseArgs {
     chunkSize: number;
     format: Format;
     compress: Compress;
+    quiet: boolean;
 }
 
 export interface IBackupArgs extends IBaseArgs {
@@ -56,6 +57,12 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs {
             describe: 'File compression',
             choices: [ 'none', 'gz', 'br' ]
         })
+        .option('quiet', {
+            alias: 'q',
+            describe: 'Supress any non error output',
+            type: 'boolean',
+            default: false
+        })
         .parse(argv.slice(2)) as any;
 
 
@@ -64,10 +71,11 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs {
             return {
                 cmd: 'backup',
                 url: args.url,
-                file: args.file || `backup_${dateFormat(new Date(), 'yyyy-mm-dd_HH:MM')}.${args.format || 'bson'}${args.compress !== 'none' ? `.${args.compress}` : ''}`,
+                file: args.file || `backup_${dateFormat(new Date(), 'yyyy-mm-dd_HH:MM')}.${args.format || 'bson'}${args.compress && args.compress !== 'none' ? `.${args.compress}` : ''}`,
                 chunkSize: args.chunkSize,
                 format: args.format || 'bson',
-                compress: args.compress || 'none'
+                compress: args.compress || 'none',
+                quiet: args.quiet
             }
         case 'restore':
             const defaults = parseFileName(args.file);
@@ -85,7 +93,8 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs {
                 file: args.file,
                 chunkSize: args.chunkSize,
                 format: format,
-                compress: compress
+                compress: compress,
+                quiet: args.quiet
             }
     }
 
