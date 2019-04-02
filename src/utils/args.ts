@@ -3,6 +3,7 @@ import dateFormat from 'dateformat';
 
 export interface IBaseArgs {
     chunkSize: number;
+    format: 'bson' | 'json';
 }
 
 export interface IBackupArgs extends IBaseArgs {
@@ -25,7 +26,7 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs {
             }).option('file', {
                 alias: 'f',
                 describe: 'File to create',
-                default: `backup_${dateFormat(new Date(), 'yyyy-mm-dd_HH:MM')}.json`
+                default: `backup_${dateFormat(new Date(), 'yyyy-mm-dd_HH:MM')}`
             });
         })
         .command('restore <file> <url>', 'Restore a backup', yargs => {
@@ -41,6 +42,12 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs {
             type: 'number',
             default: 1000
         })
+        .option('format', {
+            alias: 'F',
+            describe: 'File Format',
+            choices: [ 'bson', 'json' ],
+            default: 'bson'
+        })
         .parse(argv.slice(2)) as any;
 
 
@@ -49,15 +56,17 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs {
             return {
                 cmd: 'backup',
                 url: args.url,
-                file: args.file,
-                chunkSize: args.chunkSize
+                file: `${args.file}.${args.format}`,
+                chunkSize: args.chunkSize,
+                format: args.format
             }
         case 'restore':
             return {
                 cmd: 'restore',
                 url: args.url,
                 file: args.file,
-                chunkSize: args.chunkSize
+                chunkSize: args.chunkSize,
+                format: args.format
             }
     }
 

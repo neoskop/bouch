@@ -4,6 +4,7 @@ import ProgressBar from 'progress';
 import { Backup } from './backup';
 import { Restore } from './restore';
 import { JsonSerializer } from './serializers/json-serializer';
+import { BsonSerializer } from './serializers/bson-serializer';
 import { getArgs } from './utils/args';
 
 export async function cli() {
@@ -13,7 +14,7 @@ export async function cli() {
             case 'backup': {
                 let bar: ProgressBar|undefined;
                 const backup = new Backup(args.url, args);
-                backup.registerSerializer(JsonSerializer.serialize({ space: 2 }));
+                backup.registerSerializer(args.format === 'json' ? JsonSerializer.serialize({ space: 2 }) : BsonSerializer.serialize());
 
                 backup.events.subscribe(event => {
                     if (!bar) {
@@ -36,7 +37,7 @@ export async function cli() {
                 const file = await fs.readFile(args.file);
 
                 const restore = new Restore(args.url, args);
-                restore.registerDeserializer(JsonSerializer.deserialize());
+                restore.registerDeserializer(args.format === 'json' ? JsonSerializer.deserialize() : BsonSerializer.deserialize());
 
                 restore.events.subscribe(event => {
                     if (!bar) {
@@ -47,22 +48,6 @@ export async function cli() {
                 await restore.restore(file);
 
                 bar && bar.terminate();
-
-                // await restore(args.url, file, args).pipe(
-                //     tap({
-                //         next: event => {
-                //             if (event instanceof ProgressEvent) {
-                //                 if (!bar) {
-                //                     bar = new ProgressBar('RESTORE [:bar] :current/:total :percent :etas remaining', { width: 40, total: event.total });
-                //                 }
-                //                 bar.tick();
-                //             }
-                //         },
-                //         complete: () => {
-                //             bar.terminate();
-                //         }
-                //     })
-                // ).toPromise();
                 break;
             }
         }
