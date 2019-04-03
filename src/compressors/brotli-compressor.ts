@@ -1,16 +1,13 @@
-import { Middleware } from '../utils/pipeline';
 import zlib from 'zlib';
 
-export class BrotliCompressor {
-    static compress() : Middleware<Buffer, Buffer> {
-        return (input : Buffer) => {
-            return zlib.brotliCompressSync(input);
-        }
+import { ICompressor } from './compressor';
+
+export class BrotliCompressor implements ICompressor {
+    compress(input: Buffer) {
+        return zlib.brotliCompressSync(input);
     }
 
-    static decompress() : Middleware<Buffer, Buffer> {
-        return (input : Buffer) => {
-            return zlib.brotliDecompressSync(input);
-        }
+    decompress(input: Buffer) {
+        return zlib.brotliDecompressSync(input);
     }
 }

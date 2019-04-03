@@ -1,16 +1,17 @@
-import { Middleware } from '../utils/pipeline';
 import BSON from 'bson';
 
-export class BsonSerializer {
-    static serialize() : Middleware<object, Buffer> {
-        return (input : object) => {
-            return BSON.serialize(input);
-        }
+import { BackupDocuments, ISerializer } from './serializer';
+
+export class BsonSerializer implements ISerializer {
+    serialize(docs: BackupDocuments) {
+        /**
+         * wrap into root object, due to bson design bug
+         * @see https://blog.jeaye.com/2016/09/28/bson-design-flaw/
+         */
+        return BSON.serialize({ docs });
     }
 
-    static deserialize() : Middleware<Buffer, object> {
-        return (input : Buffer) => {
-            return BSON.deserialize(input);
-        }
+    deserialize(buffer: Buffer) {
+        return BSON.deserialize(buffer).docs;
     }
 }

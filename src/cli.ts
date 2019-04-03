@@ -1,12 +1,12 @@
 import fs from 'fs-extra';
 import ProgressBar from 'progress';
+import { defer, of } from 'rxjs';
+import { concatMap, toArray } from 'rxjs/operators';
 
 import { Backup } from './backup';
+import { CompressorFactory } from './compressors/compressor-factory';
 import { Restore } from './restore';
-import { JsonSerializer } from './serializers/json-serializer';
-import { BsonSerializer } from './serializers/bson-serializer';
-import { GzipCompressor } from './compressors/gzip-compressor';
-import { BrotliCompressor} from './compressors/brotli-compressor';
+import { SerializerFactory } from './serializers/serializer-factory';
 import { getArgs } from './utils/args';
 import { streamToBuffer } from './utils/stream-to-buffer';
 
@@ -14,17 +14,13 @@ export async function cli() {
     try {
         const args = getArgs();
 
+        const compressor = new CompressorFactory().get(args.compress);
+        const serializer = new SerializerFactory().get(args.format);
+
         switch (args.cmd) {
             case 'backup': {
                 let bar: ProgressBar|undefined;
                 const backup = new Backup(args.url, args);
-                backup.registerSerializer(args.format === 'json' ? JsonSerializer.serialize({ space: 2 }) : BsonSerializer.serialize());
-
-                if(args.compress === 'gz') {
-                    backup.registerCompressor(GzipCompressor.compress())
-                } else if(args.compress === 'br') {
-                    backup.registerCompressor(BrotliCompressor.compress())
-                }
 
                 if(!args.quiet) {
                     backup.events.subscribe(event => {
@@ -35,7 +31,11 @@ export async function cli() {
                     });
                 }
 
-                const content = await backup.backup();
+                const content = await backup.backup().pipe(
+                    toArray(),
+                    concatMap(docs => defer(async () => await serializer.serialize(docs))),
+                    concatMap(buffer => defer(async () => await compressor.compress(buffer)))
+                ).toPromise();
 
                 bar && bar.terminate();
 
@@ -53,13 +53,6 @@ export async function cli() {
                 const file = await (args.file === '-' ? streamToBuffer(process.stdin) : fs.readFile(args.file));
 
                 const restore = new Restore(args.url, args);
-                restore.registerDeserializer(args.format === 'json' ? JsonSerializer.deserialize() : BsonSerializer.deserialize());
-
-                if(args.compress === 'gz') {
-                    restore.registerDecompressor(GzipCompressor.decompress())
-                } else if(args.compress === 'br') {
-                    restore.registerDecompressor(BrotliCompressor.decompress())
-                }
 
                 if(!args.quiet) {
                     restore.events.subscribe(event => {
@@ -69,7 +62,14 @@ export async function cli() {
                         bar.tick();
                     });
                 }
-                await restore.restore(file);
+
+                await restore.ensureEmptyDatabase().toPromise();
+
+                await of(file).pipe(
+                    concatMap(buffer => defer(async () => await compressor.decompress(buffer))),
+                    concatMap(buffer => defer(async () => serializer.deserialize(buffer))),
+                    concatMap(docs => restore.restore(docs))
+                ).toPromise();
 
                 bar && bar.terminate();
                 break;
@@ -78,7 +78,7 @@ export async function cli() {
                 let bar: ProgressBar|undefined;
 
                 const backup = new Backup(args.from, args);
-                backup.registerSerializer(BsonSerializer.serialize());
+                const restore = new Restore(args.to, args);
 
                 if(!args.quiet) {
                     backup.events.subscribe(event => {
@@ -89,28 +89,17 @@ export async function cli() {
                     });
                 }
 
-                const content = await backup.backup();
+                await restore.ensureEmptyDatabase().toPromise();
 
-                bar = undefined;
-
-                const restore = new Restore(args.to, args);
-                restore.registerDeserializer(BsonSerializer.deserialize());
-
-                if(!args.quiet) {
-                    restore.events.subscribe(event => {
-                        if (!bar) {
-                            bar = new ProgressBar('RESTORE [:bar] :current/:total :percent :etas remaining', { width: 40, total: event.total });
-                        }
-                        bar.tick();
-                    });
-                }
-                await restore.restore(content);
+                await backup.backup().pipe(
+                    concatMap(doc => restore.restore(doc))
+                ).toPromise();
 
                 bar && bar!.terminate();
             }
         }
     } catch(e) {
-        console.error(e.stack);
+        console.error(e.message);
         process.exit(1);
     }
 }
