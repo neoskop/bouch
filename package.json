@@ -23,7 +23,8 @@
   "scripts": {
     "build": "tsc",
     "publish-next": "npm run build && npm publish --tag next",
-    "publish-latest": "npm run build && npm publish"
+    "publish-latest-only": "npm run build && npm publish",
+    "publish-latest": "npm run publish-latest-only && npm dist-tag add @neoskop/bouch@`jq '.version' package.json -r` next"
   },
   "devDependencies": {
     "@types/axios": "0.14.0",
