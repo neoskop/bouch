@@ -1,7 +1,7 @@
 import { defer, from, isObservable, Observable, of, Subject } from 'rxjs';
 import { bufferCount, concatMap, ignoreElements } from 'rxjs/operators';
 
-import { BackupDocument, BackupDocuments } from './serializers/serializer';
+import { Attachments, BackupDocument, BackupDocuments } from './serializers/serializer';
 import { CouchDbApi } from './utils/couchdb-api';
 import { ProgressEvent } from './utils/progress-event';
 
@@ -39,15 +39,20 @@ export class Restore {
                 const res = await this.api.bulkDocs(docs.map(o => o.doc));
                 const idRevMap = new Map<string, string>(res.map(r => [r.id, r.rev] as [string, string]));
 
+                
                 for (const obj of docs) {
-                    for (const attachment in obj.attachments) {
-                        const res = await this.api.putAttachment(obj.doc._id, attachment, idRevMap.get(obj.doc._id)!, obj.attachments[attachment].content, obj.attachments[attachment].content_type);
-                        idRevMap.set(res.id, res.rev);
-                    }
+                    await this.restoreAttachments(obj.doc._id, obj.attachments, idRevMap);
                     this.events.next(new ProgressEvent(++i, length));
-                }
+                }                
             })),
             ignoreElements()
         )
+    }
+
+    protected async restoreAttachments(id : string, attachments : Attachments, revMap : Map<string, string>) {
+        for (const attachment in attachments) {
+            const res = await this.api.putAttachment(id, attachment, revMap.get(id)!, attachments[attachment].content, attachments[attachment].content_type);
+            revMap.set(res.id, res.rev);
+        }
     }
 }

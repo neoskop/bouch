@@ -1,8 +1,8 @@
 import { Observable, Subject } from 'rxjs';
 import sortObject from 'sort-object-keys';
 
-import { BackupDocument } from './serializers/serializer';
-import { CouchDbApi } from './utils/couchdb-api';
+import { Attachments, BackupDocument } from './serializers/serializer';
+import { Attachment, CouchDbApi } from './utils/couchdb-api';
 import { ProgressEvent } from './utils/progress-event';
 
 export class Backup {
@@ -31,19 +31,11 @@ export class Backup {
                         if (backupedRows.has(row.id)) {
                             continue;
                         }
-                        const doc: BackupDocument = {
+
+                        const doc = {
                             doc: sortObjectRecursive(row.doc),
-                            attachments: {}
+                            attachments: await this.backupAttachments(row.doc._id, row.doc._attachments || {})
                         }
-                        if (row.doc._attachments) {
-                            for (const attachment in row.doc._attachments) {
-                                doc.attachments[attachment] = {
-                                    content_type: row.doc._attachments[attachment].content_type,
-                                    content: await this.api.getAttachment(row.id, attachment)
-                                }
-                            }
-                        }
-                        doc.attachments = sortObjectRecursive(doc.attachments);
                         delete doc.doc._rev;
                         delete doc.doc._attachments;
                         this.events.next(new ProgressEvent(++i, total_rows));
@@ -53,6 +45,18 @@ export class Backup {
                 sub.complete();
             })().catch(err => sub.error(err));
         });
+    }
+
+    protected async backupAttachments(id : string, attachments: { [name: string]: Attachment }) {
+        const backupAttachments : Attachments = {};
+        for (const attachment in attachments) {
+            backupAttachments[attachment] = {
+                content_type: attachments[attachment].content_type,
+                content: await this.api.getAttachment(id, attachment)
+            }
+        }
+
+        return sortObjectRecursive(backupAttachments);
     }
 }
 
