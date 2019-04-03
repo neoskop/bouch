@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import ProgressBar from 'progress';
-import { defer, of } from 'rxjs';
-import { concatMap, toArray } from 'rxjs/operators';
+import { defer, of, combineLatest } from 'rxjs';
+import { concatMap, toArray, first } from 'rxjs/operators';
 
 import { Backup } from './backup';
 import { CompressorFactory } from './compressors/compressor-factory';
@@ -81,18 +81,20 @@ export async function cli() {
                 const restore = new Restore(args.to, args);
 
                 if(!args.quiet) {
-                    backup.events.subscribe(event => {
+                    combineLatest(
+                        backup.events.pipe(first()),
+                        restore.events
+                    ).subscribe(([ backup ]) => {
                         if (!bar) {
-                            bar = new ProgressBar('RETRIVE [:bar] :current/:total :percent :etas remaining', { width: 40, total: event.total });
+                            bar = new ProgressBar('RETRIVE [:bar] :current/:total :percent :etas remaining', { width: 40, total: backup.total });
                         }
                         bar.tick();
                     });
                 }
 
-                await restore.ensureEmptyDatabase().toPromise();
-
-                await backup.backup().pipe(
-                    concatMap(doc => restore.restore(doc))
+                await restore.ensureEmptyDatabase().pipe(
+                    concatMap(() => backup.backup()),
+                    obs => restore.restore(obs)
                 ).toPromise();
 
                 bar && bar!.terminate();
