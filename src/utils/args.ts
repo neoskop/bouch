@@ -43,6 +43,11 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs | IMigr
                 describe: 'Output to stdout instead of file',
                 type: 'boolean',
                 default: false
+            }).option('chunk-size', {
+                alias: 'c',
+                describe: 'Number of documents read/write at once',
+                type: 'number',
+                default: 1000
             });
         })
         .command('restore <file> <url>', 'Restore a backup', yargs => {
@@ -50,6 +55,11 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs | IMigr
                 describe: 'Backup file'
             }).positional('url', {
                 describe: 'Database URL'
+            }).option('chunk-size', {
+                alias: 'c',
+                describe: 'Number of documents read/write at once',
+                type: 'number',
+                default: 1000
             })
         })
         .command('migrate <from> <to>', 'Copy from one database to another', yargs => {
@@ -57,14 +67,14 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs | IMigr
                 describe: 'From Database'
             }).positional('to', {
                 describe: 'To Database'
+            }).option('chunk-size', {
+                alias: 'c',
+                describe: 'Number of documents read/write at once',
+                type: 'number',
+                default: 100
             })
         })
-        .option('chunk-size', {
-            alias: 'c',
-            describe: 'Number of documents read/write at once',
-            type: 'number',
-            default: 1000
-        })
+        
         .option('format', {
             alias: 'F',
             describe: 'File format (ignored in migrate)',

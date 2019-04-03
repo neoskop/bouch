@@ -30,14 +30,14 @@ Positionals:
 Options:
   --help            Show help                                          [boolean]
   --version         Show version number                                [boolean]
-  --chunk-size, -c  Number of documents read/write at once
-                                                        [number] [default: 1000]
   --format, -F      File format (ignored in migrate)   [choices: "bson", "json"]
   --compress, -C    File compression (ignored in migrate)
                                                    [choices: "none", "gz", "br"]
   --quiet, -q       Supress any non error output      [boolean] [default: false]
   --file, -f        File to create
   --stdout          Output to stdout instead of file  [boolean] [default: false]
+  --chunk-size, -c  Number of documents read/write at once
+                                                        [number] [default: 1000]
 ```
 
 ### Restore
@@ -59,12 +59,12 @@ Positionals:
 Options:
   --help            Show help                                          [boolean]
   --version         Show version number                                [boolean]
-  --chunk-size, -c  Number of documents read/write at once
-                                                        [number] [default: 1000]
   --format, -F      File format (ignored in migrate)   [choices: "bson", "json"]
   --compress, -C    File compression (ignored in migrate)
                                                    [choices: "none", "gz", "br"]
   --quiet, -q       Supress any non error output      [boolean] [default: false]
+  --chunk-size, -c  Number of documents read/write at once
+                                                        [number] [default: 1000]
 ```
 
 ### Migrate
@@ -86,12 +86,12 @@ Positionals:
 Options:
   --help            Show help                                          [boolean]
   --version         Show version number                                [boolean]
-  --chunk-size, -c  Number of documents read/write at once
-                                                        [number] [default: 1000]
   --format, -F      File format (ignored in migrate)   [choices: "bson", "json"]
   --compress, -C    File compression (ignored in migrate)
                                                    [choices: "none", "gz", "br"]
   --quiet, -q       Supress any non error output      [boolean] [default: false]
+  --chunk-size, -c  Number of documents read/write at once
+                                                         [number] [default: 100]
 ```
 
 ## License
