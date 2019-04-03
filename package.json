@@ -1,6 +1,6 @@
 {
   "name": "@neoskop/bouch",
-  "version": "0.2.0",
+  "version": "0.3.0-rc.0",
   "description": "CouchDB/PouchDB Backup/Restore Tool with Attachments Support",
   "keywords": [
     "couchdb",
