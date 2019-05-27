@@ -16,5 +16,7 @@ export type BackupDocuments = BackupDocument[];
 
 export interface ISerializer {
     serialize(docs: BackupDocuments): Buffer;
+    serializeMulti(dbs : { [name: string]: BackupDocuments }) : Buffer;
     deserialize(buffer: Buffer): BackupDocuments;
+    deserializeMulti(buffer: Buffer): { [name: string]: BackupDocuments };
 }

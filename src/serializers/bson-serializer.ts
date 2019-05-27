@@ -11,7 +11,27 @@ export class BsonSerializer implements ISerializer {
         return BSON.serialize({ docs });
     }
 
+    serializeMulti(dbs : { [name: string]: BackupDocuments }) : Buffer {
+        return BSON.serialize({ '@multi': true, ...dbs });
+    }
+
     deserialize(buffer: Buffer) {
-        return BSON.deserialize(buffer).docs;
+        const { '@multi': multi, docs } = BSON.deserialize(buffer);
+
+        if(multi || !Array.isArray(docs)) {
+            throw new Error('Expected single database backup');
+        }
+
+        return docs;
+    }
+
+    deserializeMulti(buffer: Buffer): { [name: string]: BackupDocuments } {
+        const { '@multi': multi, ...dbs } = BSON.deserialize(buffer);
+
+        if(!multi) {
+            throw new Error('Expected multi database backup');
+        }
+
+        return dbs;
     }
 }

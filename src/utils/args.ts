@@ -9,6 +9,9 @@ export interface IBaseArgs {
     format: Format;
     compress: Compress;
     quiet: boolean;
+    multiDatabase: boolean,
+    filter?: string;
+    rename?: string;
 }
 
 export interface IBackupArgs extends IBaseArgs {
@@ -77,19 +80,29 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs | IMigr
         
         .option('format', {
             alias: 'F',
-            describe: 'File format (ignored in migrate)',
+            describe: 'File format (ignored in migrate), default: bson',
             choices: [ 'bson', 'json' ]
         })
         .option('compress', {
             alias: 'C',
-            describe: 'File compression (ignored in migrate)',
-            choices: [ 'none', 'gz', 'br' ]
+            describe: 'File compression (ignored in migrate), default: none',
+            choices: [ 'none', 'gz', 'br' ],
         })
         .option('quiet', {
             alias: 'q',
             describe: 'Supress any non error output',
             type: 'boolean',
             default: false
+        }).option('multi-database', {
+            alias: 'm',
+            describe: 'Process multiple databases',
+            type: 'boolean',
+            default: false
+        }).option('filter', {
+            describe: 'Filter for db names (use with --multi-database)'
+        }).option('rename', {
+            alias: 'r',
+            describe: 'Code to rename databases in multi-database mode',
         })
         .parse(argv.slice(2)) as any;
 
@@ -103,7 +116,10 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs | IMigr
                 format: args.format || 'bson',
                 compress: args.compress || 'none',
                 quiet: args.quiet || args.stdout,
-                stdout: args.stdout
+                stdout: args.stdout,
+                multiDatabase: args.multiDatabase,
+                filter: args.filter,
+                rename: args.rename
             }
         case 'restore':
             const defaults = parseFileName(args.file);
@@ -122,7 +138,10 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs | IMigr
                 chunkSize: args.chunkSize,
                 format: format,
                 compress: compress,
-                quiet: args.quiet
+                quiet: args.quiet,
+                multiDatabase: args.multiDatabase,
+                filter: args.filter,
+                rename: args.rename
             }
         case 'migrate':
             return {
@@ -132,7 +151,10 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs | IMigr
                 chunkSize: args.chunkSize,
                 format: 'bson',
                 compress: 'none',
-                quiet: args.quiet
+                quiet: args.quiet,
+                multiDatabase: args.multiDatabase,
+                filter: args.filter,
+                rename: args.rename
             }
     }
 
