@@ -1,6 +1,6 @@
 {
   "name": "@neoskop/bouch",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "CouchDB/PouchDB Backup/Restore Tool with Attachments Support",
   "keywords": [
     "couchdb",
@@ -31,6 +31,7 @@
     "@types/bson": "4.0.0",
     "@types/dateformat": "3.0.0",
     "@types/fs-extra": "5.0.5",
+    "@types/minimatch": "3.0.3",
     "@types/node": "11.12.2",
     "@types/progress": "2.0.3",
     "@types/sort-object-keys": "1.1.0",
@@ -42,6 +43,7 @@
     "bson": "4.0.2",
     "dateformat": "3.0.3",
     "fs-extra": "7.0.1",
+    "minimatch": "3.0.4",
     "progress": "2.0.3",
     "rxjs": "6.4.0",
     "sort-object-keys": "1.1.2",

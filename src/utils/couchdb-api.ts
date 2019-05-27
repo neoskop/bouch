@@ -94,4 +94,11 @@ export class CouchDbApi {
         debug('createDatabase', this.url);
         await axios.put(this.url, '');
     }
+
+    async allDbs() : Promise<string[]> {
+        debug('allDbs', this.url);
+        const res = await axios.get<string[]>(`${this.url}/_all_dbs`);
+
+        return res.data;
+    }
 }

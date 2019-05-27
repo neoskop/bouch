@@ -21,9 +21,36 @@ export class JsonSerializer implements ISerializer {
         return Buffer.from(json);
     }
 
+    serializeMulti(dbs : { [name: string]: BackupDocuments }) : Buffer {
+        const json = JSON.stringify({
+            ...dbs,
+            '@multi': true
+        }, bufferReplacer);
+
+        return Buffer.from(json);
+    }
+
     deserialize(buffer: Buffer) {
         const json = buffer.toString('utf8');
 
-        return JSON.parse(json, bufferReviver);
+        const docs = JSON.parse(json, bufferReviver);
+
+        if(!Array.isArray(docs)) {
+            throw new Error('Expected single database backup');
+        }
+
+        return docs;
+    }
+
+    deserializeMulti(buffer: Buffer): { [name: string]: BackupDocuments } {
+        const json = buffer.toString('utf8');
+
+        const { '@multi': multi, ...dbs } = JSON.parse(json, bufferReviver);
+
+        if(!multi) {
+            throw new Error('Expected multi database backup');
+        }
+
+        return dbs;
     }
 }
