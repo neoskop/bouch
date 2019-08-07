@@ -74,7 +74,7 @@ export class CouchDbApi {
 
     async putAttachment(id: string, name: string, rev: string, content: Buffer, content_type: string) : Promise<CreateResponse> {
         debug('putAttachment', this.url, { id, name, rev, content_type });
-        const res = await axios.put<CreateResponse>(`${this.url}/${id}/${name}?rev=${rev}`, content.toString('binary'), {
+        const res = await axios.put<CreateResponse>(`${this.url}/${id}/${name}?rev=${rev}`, content, {
             headers: {
                 'Content-Type': content_type
             }
