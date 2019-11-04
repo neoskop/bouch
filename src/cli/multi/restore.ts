@@ -30,8 +30,9 @@ export async function multiRestore(args: IRestoreArgs, { serializer, compressor 
             });
         }
 
-        await restore.ensureEmptyDatabase().toPromise();
-        await restore.restore(content[db]).toPromise();
+        if(await restore.ensureEmptyDatabase().toPromise()) {
+            await restore.restore(content[db]).toPromise();
+        }
 
         bar = undefined;
     }

@@ -29,10 +29,11 @@ export async function multiMigrate(args: IMigrateArgs) {
             });
         }
 
-        await restore.ensureEmptyDatabase().toPromise();
-        await backup.backup().pipe(
-            flatMap(doc => restore.restore(doc))
-        ).toPromise();
+        if(await restore.ensureEmptyDatabase().toPromise()) {
+            await backup.backup().pipe(
+                flatMap(doc => restore.restore(doc))
+            ).toPromise();
+        }
 
         bar = undefined;
     }

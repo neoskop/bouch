@@ -25,13 +25,13 @@ export async function singleRestore(args: IRestoreArgs, { serializer, compressor
         });
     }
 
-    await restore.ensureEmptyDatabase().toPromise();
-
-    await of(file).pipe(
-        concatMap(buffer => defer(async () => await compressor.decompress(buffer))),
-        concatMap(buffer => defer(async () => serializer.deserialize(buffer))),
-        concatMap(docs => restore.restore(docs))
-    ).toPromise();
+    if(await restore.ensureEmptyDatabase().toPromise()) {
+        await of(file).pipe(
+            concatMap(buffer => defer(async () => await compressor.decompress(buffer))),
+            concatMap(buffer => defer(async () => serializer.deserialize(buffer))),
+            concatMap(docs => restore.restore(docs))
+        ).toPromise();
+    }
 
     bar && bar.terminate();
 }

@@ -1,5 +1,6 @@
 import { defer, from, isObservable, Observable, of, Subject } from 'rxjs';
 import { bufferCount, concatMap, ignoreElements } from 'rxjs/operators';
+import { parse as parseUrl } from 'url';
 
 import { Attachments, BackupDocument, BackupDocuments } from './serializers/serializer';
 import { CouchDbApi } from './utils/couchdb-api';
@@ -9,21 +10,36 @@ export class Restore {
     readonly events = new Subject<ProgressEvent>();
 
     protected readonly api : CouchDbApi;
+    protected readonly name?: string;
 
-    constructor(url : string, protected readonly options : { chunkSize: number }) {
+    constructor(url : string, protected readonly options : { chunkSize: number, prune?: boolean, ignoreNonEmpty?: boolean }) {
         this.api = new CouchDbApi(url);
+        const u = parseUrl(url);
+        if(u.path) {
+            this.name = u.path.substr(1);
+        }
     }
 
-    ensureEmptyDatabase() : Observable<void> {
+    ensureEmptyDatabase() : Observable<boolean> {
         return defer(async () => {
             if (await this.api.databaseExists()) {
                 const res = await this.api.allDocs({ skip: 0, limit: 1 });
                 if (res.total_rows !== 0) {
-                    throw new Error('Database is not empty');
+                    if(this.options.prune) {
+                        console.log('Prune database', this.name);
+                        await this.api.deleteDatabase();
+                    } else if(this.options.ignoreNonEmpty) {
+                        console.log('Skip non-empty database', this.name)
+                        return false;
+                    } else {
+                        throw new Error(`Database "${this.name}" is not empty`);
+                    }
+                } else {
+                    return true;
                 }
-            } else {
-                await this.api.createDatabase();
             }
+            await this.api.createDatabase();
+            return true;
         })
     }
 

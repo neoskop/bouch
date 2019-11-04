@@ -90,6 +90,11 @@ export class CouchDbApi {
         return !(res.status === 404 && res.data.error === 'not_found');
     }
 
+    async deleteDatabase() : Promise<void> {
+        debug('deleteDatabase', this.url);
+        await axios.delete(this.url);
+    }
+
     async createDatabase() : Promise<void> {
         debug('createDatabase', this.url);
         await axios.put(this.url, '');

@@ -1,5 +1,5 @@
 import ProgressBar from 'progress';
-import { concatMap, first } from 'rxjs/operators';
+import { first } from 'rxjs/operators';
 
 import { Backup } from '../../backup';
 import { Restore } from '../../restore';
@@ -21,10 +21,11 @@ export async function singleMigrate(args: IMigrateArgs) {
         });
     }
 
-    await restore.ensureEmptyDatabase().pipe(
-        concatMap(() => backup.backup()),
-        obs => restore.restore(obs)
-    ).toPromise();
+    if (await restore.ensureEmptyDatabase().toPromise()) {
+        await backup.backup().pipe(
+            obs => restore.restore(obs)
+        ).toPromise();
+    }
 
     bar && bar!.terminate();
 }

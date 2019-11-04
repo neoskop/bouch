@@ -12,6 +12,8 @@ export interface IBaseArgs {
     multiDatabase: boolean,
     filter?: string;
     rename?: string;
+    ignoreNonEmpty?: boolean;
+    prune?: boolean;
 }
 
 export interface IBackupArgs extends IBaseArgs {
@@ -103,6 +105,15 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs | IMigr
         }).option('rename', {
             alias: 'r',
             describe: 'Code to rename databases in multi-database mode',
+        }).option('ignore-non-empty', {
+            alias: 'i',
+            describe: 'Ignore non-empty databases',
+            type: 'boolean',
+            default: false
+        }).option('prune', {
+            describe: 'Prune database before importing',
+            type: 'boolean',
+            default: false
         })
         .parse(argv.slice(2)) as any;
 
@@ -141,7 +152,9 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs | IMigr
                 quiet: args.quiet,
                 multiDatabase: args.multiDatabase,
                 filter: args.filter,
-                rename: args.rename
+                rename: args.rename,
+                ignoreNonEmpty: args.ignoreNonEmpty,
+                prune: args.prune
             }
         case 'migrate':
             return {
@@ -154,7 +167,9 @@ export function getArgs(argv = process.argv): IBackupArgs | IRestoreArgs | IMigr
                 quiet: args.quiet,
                 multiDatabase: args.multiDatabase,
                 filter: args.filter,
-                rename: args.rename
+                rename: args.rename,
+                ignoreNonEmpty: args.ignoreNonEmpty,
+                prune: args.prune
             }
     }
 

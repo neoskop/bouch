@@ -10,7 +10,7 @@ export async function cli() {
         const compressor = new CompressorFactory().get(args.compress);
         const serializer = new SerializerFactory().get(args.format);
         const command = new CommandFactory().get(args.cmd, args.multiDatabase ? 'multi' : 'single');
-
+        debugger;
         await command(args, { serializer, compressor });
     } catch (e) {
         console.error(e.message);
